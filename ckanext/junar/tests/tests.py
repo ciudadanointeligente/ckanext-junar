@@ -54,6 +54,9 @@ class TestJunar(unittest.TestCase):
     def test_create_a_new_related_resource_element_create_automatically_one_with_junar(self):
         resource = model.Session.query(model.Resource).get(self.pr.id)
         assert len(resource.related_elements) == 1
+        related_element = resource.related_elements[0]
+        assert related_element.name == u'Junar First element'
+        assert related_element.url == u'http://somewhere.com/'
         
         
 class TestResourceRelatedElement(unittest.TestCase):
