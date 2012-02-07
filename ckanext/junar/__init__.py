@@ -30,10 +30,19 @@ class Junar(SingletonPlugin):
     implements(IDomainObjectModification)
     
     def before_insert(self, mapper, connection, instance):
+        if isinstance(instance,Resource):
+            resource = instance
+            related_element = ResourceRelatedElement()
+            related_element.name = 'Junar First element'
+            related_element.title = 'Junar First element'
+            related_element.url = resource.url
+            instance.related_elements.append(related_element)
+            #model.Session.commit()
+            #trans.commit()
         """
         Receive an object instance before that instance is INSERTed into its table.
         """
-        pass
+        #pass
 
     def before_update(self, mapper, connection, instance):
         """
@@ -48,8 +57,7 @@ class Junar(SingletonPlugin):
         pass
 
     def after_insert(self, mapper, connection, instance):
-        if isinstance(instance,Resource):
-            print instance
+        pass
                                      
     def after_update(self, mapper, connection, instance):
         """
@@ -63,11 +71,7 @@ class Junar(SingletonPlugin):
         """
         pass
     def notify(self, entity, operation):
-        if isinstance(entity,Resource) and operation == "new":
-            resource = entity
-            related_element = ResourceRelatedElement(resource=resource,name=resource.name, title=resource.name,url=resource.url)
-            model.Session.add(related_element)
-            model.repo.commit_and_remove()
+        pass
     
     
     def configure(self, config):

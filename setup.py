@@ -21,6 +21,8 @@ setup(
 	zip_safe=False,
 	install_requires=[
 		# -*- Extra requirements: -*-
+		'html',
+		'PasteDeploy'
 	],
 	entry_points=\
 	"""

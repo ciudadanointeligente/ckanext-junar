@@ -33,7 +33,7 @@ def create_apps_tables():
         Column('id', types.UnicodeText, primary_key=True, default=make_uuid),
         Column('resource_id', types.UnicodeText,
             ForeignKey('resource.id')),
-        Column('name', types.Unicode(), nullable=False, unique=True),
+        Column('name', types.Unicode(), nullable=False),
         Column('title', types.Unicode(), nullable=False),        
         Column('url', types.UnicodeText, nullable=False),
         Column('embed_code', types.UnicodeText),
@@ -46,12 +46,11 @@ def create_apps_tables():
         'resource':orm.relation(Resource,
             # all resources including deleted
             # formally resource_related_stuff
-            backref=orm.backref('related_stuff',
+            backref=orm.backref('related_elements',
                                 cascade='all, delete',
                                 ),
                            )
         },
-        order_by=[resource_related_element_table.c.resource_id],
     )
     
     
