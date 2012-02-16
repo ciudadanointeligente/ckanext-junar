@@ -30,18 +30,19 @@ class Junar(SingletonPlugin):
     implements(IMapper)
     implements(IConfigurable)
     implements(IDomainObjectModification)
+    implements(IGenshiStreamFilter)
     
     def before_insert(self, mapper, connection, instance):
         if isinstance(instance,Resource):
             resource = instance
             related_element = ResourceRelatedElement()
             dictionary = {
-                'end_point':resource.url,
+                'source':resource.url,
                 'title':resource.name,
                 'subtitle':resource.name,
                 'description': resource.description,
                 'tags':[], #empty for now because resources do not have any tags
-                'author_notes':'',#empty for now because resources do not have any author notes
+                'notes':'',#empty for now because resources do not have any author notes
                 'table_id':0,
                 'category':''
             }
@@ -95,3 +96,7 @@ class Junar(SingletonPlugin):
     
     def configure(self, config):
         setup()
+        
+        
+    def filter(self, stream):
+        pass

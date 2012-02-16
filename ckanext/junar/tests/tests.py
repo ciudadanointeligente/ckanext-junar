@@ -16,7 +16,7 @@ from ludibrio import Stub, Mock
 from junar_api import junar_api
 
 
-dictionary = {'category': '', 'subtitle': u'the title', 'description': u'lorem ipsum', 'title': u'the title', 'end_point': u'thaurl', 'tags': [], 'table_id': 0, 'author_notes': ''}
+dictionary = {'category': '', 'subtitle': u'the title', 'description': u'lorem ipsum', 'title': u'the title', 'source': u'thaurl', 'tags': [], 'table_id': 0, 'notes': ''}
 
 with Stub() as Junar:
     from junar_api import junar_api
@@ -24,24 +24,16 @@ with Stub() as Junar:
     junar_api_client = junar_api.Junar(JUNAR_API_KEY)
 
     junar_api_client.publish(dictionary) >> {
-        'subtitle': u'the title',
-        'description': u'lorem ipsum', 
-        'title': u'the title', 
-        'source': u'thaurl', 
-        'link': 'http://www.junar.com/someurl/that/junar/gave/us', 
-        'result': {
-            'fLength': 0, 
-            'fType': 'ARRAY', 
-            'fTimestamp': 0, 
-            'fArray': [ {'fStr': '', 'fType': 'TEXT'}, 
-                        {'fStr': 'COBRE (1)', 'fType': 'TEXT'}, 
-                        {'fStr': 'Enero', 'fType': 'TEXT'}, 
-                        {'fStr': '364.8', 'fType': 'TEXT'}], 
-            'fRows': 2, 
-            'fCols': 2
-        }, 
-        'id': u'the-precious-guid'
-    }
+                                              "subtitle": u'the title',
+                                              "description": u'lorem ipsum',
+                                              "title": u'the title',
+                                              "source": u'thaurl',
+                                              "link": 'http://www.junar.com/someurl/that/junar/gave/us',
+                                              "user": "ckan",
+                                              "tags": [], #we did not hand any tags
+                                              "created_at": 1314908215,      
+                                              "id": u'the-precious-guid',
+                                            }
     
     
     
