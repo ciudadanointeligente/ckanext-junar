@@ -23,6 +23,8 @@ from ckan.model.resource import Resource
 from ckanext.junar.model import setup, ResourceRelatedElement
 import ckan.model as model
 
+from ckanext.config import JUNAR_API_KEY
+
 class Junar(SingletonPlugin):
     
     implements(IMapper)
@@ -33,9 +35,25 @@ class Junar(SingletonPlugin):
         if isinstance(instance,Resource):
             resource = instance
             related_element = ResourceRelatedElement()
-            related_element.name = 'Junar First element'
-            related_element.title = 'Junar First element'
-            related_element.url = resource.url
+            dictionary = {
+                'url':resource.url,
+                'title':resource.name,
+                'subtitle':resource.name,
+                'description': resource.description,
+                'tags':[], #empty for now because resources do not have any tags
+                'author_notes':'',#empty for now because resources do not have any author notes
+                'from':0
+            }
+            #aqui obtengo el guid de junar
+            from junar_api import junar_api
+            junar_api_client = junar_api.Junar(JUNAR_API_KEY)
+            response = junar_api_client.publish(dictionary)
+            
+            #
+            
+            related_element.name = response['guid']
+            related_element.title = resource.name
+            related_element.url = response['url']
             instance.related_elements.append(related_element)
             #model.Session.commit()
             #trans.commit()
