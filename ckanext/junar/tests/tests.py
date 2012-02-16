@@ -23,10 +23,31 @@ with Stub() as Junar:
     from ckanext.config import JUNAR_API_KEY
     junar_api_client = junar_api.Junar(JUNAR_API_KEY)
 
-    junar_api_client.publish(dictionary) >> {'guid':'theguid','url':'theurl'}
+    junar_api_client.publish(dictionary) >> {
+        'subtitle': u'the title',
+        'description': u'lorem ipsum', 
+        'title': u'the title', 
+        'source': u'thaurl', 
+        'link': 'http://www.junar.com/someurl/that/junar/gave/us', 
+        'result': {
+            'fLength': 0, 
+            'fType': 'ARRAY', 
+            'fTimestamp': 0, 
+            'fArray': [ {'fStr': '', 'fType': 'TEXT'}, 
+                        {'fStr': 'COBRE (1)', 'fType': 'TEXT'}, 
+                        {'fStr': 'Enero', 'fType': 'TEXT'}, 
+                        {'fStr': '364.8', 'fType': 'TEXT'}], 
+            'fRows': 2, 
+            'fCols': 2
+        }, 
+        'id': u'the-precious-guid'
+    }
+    
+    
+    
     datastream = junar_api_client.datastream('theguid')
     
-    datastream.invoke(output = 'json_array') >> "{'subtitle': 'Enero 2012', 'description': 'Precio del Cobre para Enero 2012', 'title': 'Precio del Cobre Chile', 'source': 'http://www.bcentral.cl/estadisticas-economicas/series-indicadores/xls/Precio_Cobre__HPescado_Petrol_Celulosa%20.xls', 'link': 'http://www.junar.com/datastreams/68312/precio-del-cobre-chile-enero-2012/', 'result': [['', 'COBRE (1)'], ['Enero', '364.8']], 'id': 'PRECI-DEL-COBRE-ENERO-2012'}"
+    datastream.invoke(output = 'json_array') >> "{'subtitle': 'the title', 'description': 'lorem ipsum', 'title': 'the title', 'source': 'thaurl', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': [['', 'COBRE (1)'], ['Enero', '364.8']], 'id': 'the-precious-guid'}"
 
     
     
@@ -143,7 +164,7 @@ class TestGettingThingsFromJunarApi(unittest.TestCase):
         resource = model.Session.query(model.Resource).get(pr.id)
         
         related_element = resource.related_elements[0]
-        assert related_element.name == u'theguid'
-        assert related_element.url == u'theurl'
-        assert related_element.embed_code == u'<iframe title="theguid" width="400" height="175" src="http://www.junar.com/portal/DataServicesManager/actionEmbed?guid=theguid&amp;end_point=&amp;header_row=0" frameborder="0" style="border:1px solid #E2E0E0;padding:0;margin:0;"></iframe><p style="padding:3px 0 15px 0;margin:0;font:11px arial, helvetica, sans-serif;color:#999;">Powered by <a href="http://www.junar.com" title="Junar &middot; Discovering Data" style="color:#0862A2;">Junar</a></p>'
+        assert related_element.name == u'the-precious-guid'
+        assert related_element.url == u'http://www.junar.com/someurl/that/junar/gave/us'
+        assert related_element.embed_code == u'<iframe title="the-precious-guid" width="400" height="175" src="http://www.junar.com/portal/DataServicesManager/actionEmbed?guid=the-precious-guid&amp;end_point=&amp;header_row=0" frameborder="0" style="border:1px solid #E2E0E0;padding:0;margin:0;"></iframe><p style="padding:3px 0 15px 0;margin:0;font:11px arial, helvetica, sans-serif;color:#999;">Powered by <a href="http://www.junar.com" title="Junar &middot; Discovering Data" style="color:#0862A2;">Junar</a></p>'
         

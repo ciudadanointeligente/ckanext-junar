@@ -45,20 +45,19 @@ class Junar(SingletonPlugin):
                 'table_id':0,
                 'category':''
             }
-            #aqui obtengo el guid de junar
+            #here we obtain junars api
             from junar_api import junar_api
             junar_api_client = junar_api.Junar(JUNAR_API_KEY)
             response = junar_api_client.publish(dictionary)
             
             #
             
-            related_element.name = response['guid']
+            related_element.name = response['id']
             related_element.title = resource.name
-            related_element.url = response['url']
-            related_element.embed_code = u'<iframe title="'+related_element.name+'" width="400" height="175" src="http://www.junar.com/portal/DataServicesManager/actionEmbed?guid='+response['guid']+'&amp;end_point=&amp;header_row=0" frameborder="0" style="border:1px solid #E2E0E0;padding:0;margin:0;"></iframe><p style="padding:3px 0 15px 0;margin:0;font:11px arial, helvetica, sans-serif;color:#999;">Powered by <a href="http://www.junar.com" title="Junar &middot; Discovering Data" style="color:#0862A2;">Junar</a></p>'
+            related_element.url = response['link']
+            related_element.embed_code = u'<iframe title="'+related_element.name+'" width="400" height="175" src="http://www.junar.com/portal/DataServicesManager/actionEmbed?guid='+response['id']+'&amp;end_point=&amp;header_row=0" frameborder="0" style="border:1px solid #E2E0E0;padding:0;margin:0;"></iframe><p style="padding:3px 0 15px 0;margin:0;font:11px arial, helvetica, sans-serif;color:#999;">Powered by <a href="http://www.junar.com" title="Junar &middot; Discovering Data" style="color:#0862A2;">Junar</a></p>'
             instance.related_elements.append(related_element)
-            #model.Session.commit()
-            #trans.commit()
+            
         """
         Receive an object instance before that instance is INSERTed into its table.
         """
