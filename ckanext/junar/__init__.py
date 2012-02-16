@@ -36,13 +36,14 @@ class Junar(SingletonPlugin):
             resource = instance
             related_element = ResourceRelatedElement()
             dictionary = {
-                'url':resource.url,
+                'end_point':resource.url,
                 'title':resource.name,
                 'subtitle':resource.name,
                 'description': resource.description,
                 'tags':[], #empty for now because resources do not have any tags
                 'author_notes':'',#empty for now because resources do not have any author notes
-                'from':0
+                'table_id':0,
+                'category':''
             }
             #aqui obtengo el guid de junar
             from junar_api import junar_api
@@ -54,6 +55,7 @@ class Junar(SingletonPlugin):
             related_element.name = response['guid']
             related_element.title = resource.name
             related_element.url = response['url']
+            related_element.embed_code = u'<iframe title="'+related_element.name+'" width="400" height="175" src="http://www.junar.com/portal/DataServicesManager/actionEmbed?guid='+response['guid']+'&amp;end_point=&amp;header_row=0" frameborder="0" style="border:1px solid #E2E0E0;padding:0;margin:0;"></iframe><p style="padding:3px 0 15px 0;margin:0;font:11px arial, helvetica, sans-serif;color:#999;">Powered by <a href="http://www.junar.com" title="Junar &middot; Discovering Data" style="color:#0862A2;">Junar</a></p>'
             instance.related_elements.append(related_element)
             #model.Session.commit()
             #trans.commit()
