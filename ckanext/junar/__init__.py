@@ -25,6 +25,10 @@ import ckan.model as model
 
 from ckanext.config import JUNAR_API_KEY
 
+
+html.EMBED_IFRAME = '<div class="related_elements"><h3>Related Elements</h3><iframe title="%(name)s" width="400" height="175" src="%(embed)s" frameborder="0" style="border:1px solid #E2E0E0;padding:0;margin:0;"></iframe></div>'
+
+
 class Junar(SingletonPlugin):
     
     implements(IMapper)
@@ -36,34 +40,43 @@ class Junar(SingletonPlugin):
         if isinstance(instance,Resource):
             resource = instance
             related_element = ResourceRelatedElement()
-            dictionary = {
-                'source':resource.url,
-                'title':resource.name,
-                'subtitle':resource.name,
-                'description': resource.description,
-                'tags':[], #empty for now because resources do not have any tags
-                'notes':'',#empty for now because resources do not have any author notes
-                'table_id':0,
-                'category':''
-            }
-            #here we obtain junars api
-            from junar_api import junar_api
-            junar_api_client = junar_api.Junar(JUNAR_API_KEY)
-            response = junar_api_client.publish(dictionary)
             
-            #
+            datastream = self.publish_resource_in_junar(resource)
             
-            related_element.name = response['id']
-            related_element.title = resource.name
-            related_element.url = response['link']
-            related_element.embed_code = u'<iframe title="'+related_element.name+'" width="400" height="175" src="http://www.junar.com/portal/DataServicesManager/actionEmbed?guid='+response['id']+'&amp;end_point=&amp;header_row=0" frameborder="0" style="border:1px solid #E2E0E0;padding:0;margin:0;"></iframe><p style="padding:3px 0 15px 0;margin:0;font:11px arial, helvetica, sans-serif;color:#999;">Powered by <a href="http://www.junar.com" title="Junar &middot; Discovering Data" style="color:#0862A2;">Junar</a></p>'
-            instance.related_elements.append(related_element)
+            if datastream is not None:
+                related_element.name = datastream.guid
+                related_element.title = resource.name
+                related_element.url = resource.url 
+                related_element.embed_code = u'http://staging.junar.com/portal/DataServicesManager/actionEmbed?guid='+datastream.guid + u'&end_point='
+                instance.related_elements.append(related_element)
+            
             
         """
         Receive an object instance before that instance is INSERTed into its table.
         """
-        #pass
-
+        
+    def publish_resource_in_junar(self,resource):
+        dictionary = {
+                'source':resource.url,
+                'title':resource.name.encode('utf-8'),
+                'subtitle':(resource.name + u' - subtitle').encode('utf-8'),
+                'description': resource.description.encode('utf-8'),
+                'tags':'', #empty for now because resources do not have any tags
+                'notes':'',#empty for now because resources do not have any author notes
+                'table_id':'table0',
+                'category':'world',
+                'auth_key':JUNAR_API_KEY
+            }
+            
+            
+        from junar_api import junar_api
+        
+        junar_api_client = junar_api.Junar(JUNAR_API_KEY, base_uri = 'http://api.staging.junar.com')
+        dataset = junar_api_client.publish(dictionary)   
+        
+        return dataset
+        
+            
     def before_update(self, mapper, connection, instance):
         """
         Receive an object instance before that instance is UPDATEed.
@@ -99,4 +112,18 @@ class Junar(SingletonPlugin):
         
         
     def filter(self, stream):
-        pass
+        from pylons import request, tmpl_context as c
+        routes = request.environ.get('pylons.routes_dict')
+        is_resource_view = routes.get('controller') == 'package' and routes.get('action') == 'resource_read'
+        if is_resource_view and c.resource['id']:
+            id = c.resource['id']
+            related_elements = model.Session.query(ResourceRelatedElement).filter(ResourceRelatedElement.resource_id == id)
+            if related_elements.count() > 0 :
+                first_related_element = related_elements.first()
+                
+                data = {'embed': first_related_element.embed_code, 'name':first_related_element.name}
+                
+                stream = stream | Transformer('//div[@class=\'quick-info\']')\
+                    .after(HTML(html.EMBED_IFRAME % data))
+            stream = stream | Transformer('//div[@class=\'resource-preview\']').remove()
+        return stream

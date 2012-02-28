@@ -9,37 +9,17 @@ import ckan.model as model
 from ckan.lib.create_test_data import CreateTestData
 from ckanext.junar.model import ResourceRelatedElement
 
-from ckanext.config import JUNAR_API_KEY
+from ludibrio import Stub
+from ludibrio.matcher import *
 
-from ludibrio import Stub, Mock
+
 
 from junar_api import junar_api
+from ckanext.config import JUNAR_API_KEY
+
+from junar_api.junar_api import DataStream
 
 
-dictionary = {'category': '', 'subtitle': u'the title', 'description': u'lorem ipsum', 'title': u'the title', 'source': u'thaurl', 'tags': [], 'table_id': 0, 'notes': ''}
-
-with Stub() as Junar:
-    from junar_api import junar_api
-    from ckanext.config import JUNAR_API_KEY
-    junar_api_client = junar_api.Junar(JUNAR_API_KEY)
-
-    junar_api_client.publish(dictionary) >> {
-                                              "subtitle": u'the title',
-                                              "description": u'lorem ipsum',
-                                              "title": u'the title',
-                                              "source": u'thaurl',
-                                              "link": 'http://www.junar.com/someurl/that/junar/gave/us',
-                                              "user": "ckan",
-                                              "tags": [], #we did not hand any tags
-                                              "created_at": 1314908215,      
-                                              "id": u'the-precious-guid',
-                                            }
-    
-    
-    
-    datastream = junar_api_client.datastream('theguid')
-    
-    datastream.invoke(output = 'json_array') >> "{'subtitle': 'the title', 'description': 'lorem ipsum', 'title': 'the title', 'source': 'thaurl', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': [['', 'COBRE (1)'], ['Enero', '364.8']], 'id': 'the-precious-guid'}"
 
     
     
@@ -49,8 +29,17 @@ class TestJunar(unittest.TestCase):
     @classmethod
     def setup_class(cls):
         plugins.load('junar')
+        with Stub() as DataStream:
+            DataStream.info() >> {'subtitle': 'mock information', 'description': 'The population rate per province in the Netherlands', 'title': 'Population rate', 'source': 'User Uploaded Data', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': {'fLength': 0, 'fType': 'ARRAY', 'fTimestamp': 1330368967241L, 'fArray': [], 'fRows': 2, 'fCols': 13}, 'id': 'the-precious-guid'}
+            
+        with Stub() as Junar:
+            from junar_api import junar_api
+            junar_api_client = junar_api.Junar(JUNAR_API_KEY, base_uri = 'http://api.staging.junar.com')
+
+            junar_api_client.publish(kind_of(dict)) >> DataStream
 
     def setUp(self):
+        self.prepareStub()
         self.pkgname = u'resourcetest'
         assert not model.Package.by_name(self.pkgname)
         assert model.Session.query(model.Resource).filter(model.Resource.name == u'resourcetest').count() == 0
@@ -80,6 +69,16 @@ class TestJunar(unittest.TestCase):
 
     def teardown(self):
         model.repo.rebuild_db()
+        
+    def prepareStub(self):
+        with Stub() as DataStream:
+            DataStream.info() >> {'subtitle': 'mock information', 'description': 'The population rate per province in the Netherlands', 'title': 'Population rate', 'source': 'User Uploaded Data', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': {'fLength': 0, 'fType': 'ARRAY', 'fTimestamp': 1330368967241L, 'fArray': [], 'fRows': 2, 'fCols': 13}, 'id': 'the-precious-guid'}
+            
+        with Stub() as Junar:
+            from junar_api import junar_api
+            junar_api_client = junar_api.Junar(JUNAR_API_KEY, base_uri = 'http://api.staging.junar.com')
+
+            junar_api_client.publish(kind_of(dict)) >> DataStream
 
     @classmethod
     def teardown_class(cls):
@@ -96,6 +95,14 @@ class TestResourceRelatedElement(unittest.TestCase):
     @classmethod
     def setup_class(cls):
         plugins.load('junar')
+        with Stub() as DataStream:
+            DataStream.info() >> {'subtitle': 'mock information', 'description': 'The population rate per province in the Netherlands', 'title': 'Population rate', 'source': 'User Uploaded Data', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': {'fLength': 0, 'fType': 'ARRAY', 'fTimestamp': 1330368967241L, 'fArray': [], 'fRows': 2, 'fCols': 13}, 'id': 'the-precious-guid'}
+            
+        with Stub() as Junar:
+            from junar_api import junar_api
+            junar_api_client = junar_api.Junar(JUNAR_API_KEY, base_uri = 'http://api.staging.junar.com')
+
+            junar_api_client.publish(kind_of(dict)) >> DataStream
         
         
     def setUp(self):
@@ -134,7 +141,15 @@ class TestResourceRelatedElement(unittest.TestCase):
 class TestGettingThingsFromJunarApi(unittest.TestCase):
     @classmethod
     def setup_class(cls):
-        plugins.load('junar')        
+        plugins.load('junar')
+        with Stub() as DataStream:
+            DataStream.info() >> {'subtitle': 'mock information', 'description': 'The population rate per province in the Netherlands', 'title': 'Population rate', 'source': 'User Uploaded Data', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': {'fLength': 0, 'fType': 'ARRAY', 'fTimestamp': 1330368967241L, 'fArray': [], 'fRows': 2, 'fCols': 13}, 'id': 'the-precious-guid'}
+            
+        with Stub() as Junar:
+            from junar_api import junar_api
+            junar_api_client = junar_api.Junar(JUNAR_API_KEY, base_uri = 'http://api.staging.junar.com')
+
+            junar_api_client.publish(kind_of(dict)) >> DataStream   
         
     def setUp(self):
         pass
@@ -158,5 +173,31 @@ class TestGettingThingsFromJunarApi(unittest.TestCase):
         related_element = resource.related_elements[0]
         assert related_element.name == u'the-precious-guid'
         assert related_element.url == u'http://www.junar.com/someurl/that/junar/gave/us'
-        assert related_element.embed_code == u'<iframe title="the-precious-guid" width="400" height="175" src="http://www.junar.com/portal/DataServicesManager/actionEmbed?guid=the-precious-guid&amp;end_point=&amp;header_row=0" frameborder="0" style="border:1px solid #E2E0E0;padding:0;margin:0;"></iframe><p style="padding:3px 0 15px 0;margin:0;font:11px arial, helvetica, sans-serif;color:#999;">Powered by <a href="http://www.junar.com" title="Junar &middot; Discovering Data" style="color:#0862A2;">Junar</a></p>'
+        assert related_element.embed_code == u'http://staging.junar.com/portal/DataServicesManager/actionEmbed?guid=the-precious-guid&end_point='
+        
+
+    def test_when_junar_sends_us_an_error_message_we_do_not_create_any_related_element(self):
+        with Stub() as Junar:
+            from junar_api import junar_api
+            junar_api_client = junar_api.Junar(JUNAR_API_KEY, base_uri = 'http://api.staging.junar.com')
+            #it is very important to define what this method will return on error
+            junar_api_client.publish(kind_of(dict)) >> None
+            
+        pr = model.Resource(url=u'thaurl',
+                            name=u'the title',
+                            format=u'csv',
+                            description=u'lorem ipsum',
+                            hash=u'12345',
+                            alt_url=u'http://theurl.com',
+                            extras={u'size':200},
+                            )
+        
+        rev = model.repo.new_revision()
+        model.Session.add(pr)
+        model.repo.commit_and_remove()
+        resource = model.Session.query(model.Resource).get(pr.id)
+            
+        assert resource.related_elements.__len__() == 0
+        
+    
         
