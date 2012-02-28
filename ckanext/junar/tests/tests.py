@@ -30,7 +30,7 @@ class TestJunar(unittest.TestCase):
     def setup_class(cls):
         plugins.load('junar')
         with Stub() as DataStream:
-            DataStream.info() >> {'subtitle': 'mock information', 'description': 'The population rate per province in the Netherlands', 'title': 'Population rate', 'source': 'User Uploaded Data', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': {'fLength': 0, 'fType': 'ARRAY', 'fTimestamp': 1330368967241L, 'fArray': [], 'fRows': 2, 'fCols': 13}, 'id': 'the-precious-guid'}
+            DataStream.guid >> 'the-precious-guid'
             
         with Stub() as Junar:
             from junar_api import junar_api
@@ -72,7 +72,7 @@ class TestJunar(unittest.TestCase):
         
     def prepareStub(self):
         with Stub() as DataStream:
-            DataStream.info() >> {'subtitle': 'mock information', 'description': 'The population rate per province in the Netherlands', 'title': 'Population rate', 'source': 'User Uploaded Data', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': {'fLength': 0, 'fType': 'ARRAY', 'fTimestamp': 1330368967241L, 'fArray': [], 'fRows': 2, 'fCols': 13}, 'id': 'the-precious-guid'}
+            DataStream.guid >> 'the-precious-guid'
             
         with Stub() as Junar:
             from junar_api import junar_api
@@ -96,7 +96,7 @@ class TestResourceRelatedElement(unittest.TestCase):
     def setup_class(cls):
         plugins.load('junar')
         with Stub() as DataStream:
-            DataStream.info() >> {'subtitle': 'mock information', 'description': 'The population rate per province in the Netherlands', 'title': 'Population rate', 'source': 'User Uploaded Data', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': {'fLength': 0, 'fType': 'ARRAY', 'fTimestamp': 1330368967241L, 'fArray': [], 'fRows': 2, 'fCols': 13}, 'id': 'the-precious-guid'}
+            DataStream.guid >> 'the-precious-guid'
             
         with Stub() as Junar:
             from junar_api import junar_api
@@ -143,7 +143,7 @@ class TestGettingThingsFromJunarApi(unittest.TestCase):
     def setup_class(cls):
         plugins.load('junar')
         with Stub() as DataStream:
-            DataStream.info() >> {'subtitle': 'mock information', 'description': 'The population rate per province in the Netherlands', 'title': 'Population rate', 'source': 'User Uploaded Data', 'link': 'http://www.junar.com/someurl/that/junar/gave/us', 'result': {'fLength': 0, 'fType': 'ARRAY', 'fTimestamp': 1330368967241L, 'fArray': [], 'fRows': 2, 'fCols': 13}, 'id': 'the-precious-guid'}
+            DataStream.guid >> 'the-precious-guid'
             
         with Stub() as Junar:
             from junar_api import junar_api
@@ -172,7 +172,7 @@ class TestGettingThingsFromJunarApi(unittest.TestCase):
         
         related_element = resource.related_elements[0]
         assert related_element.name == u'the-precious-guid'
-        assert related_element.url == u'http://www.junar.com/someurl/that/junar/gave/us'
+        assert related_element.url == u'thaurl'
         assert related_element.embed_code == u'http://staging.junar.com/portal/DataServicesManager/actionEmbed?guid=the-precious-guid&end_point='
         
 
