@@ -4,10 +4,16 @@ from ckan import plugins
 from sqlalchemy import MetaData, __version__ as sqav
 from nose.tools import assert_equal, raises
 
+from paste.deploy import appconfig
+import paste.fixture
+from ckan.config.middleware import make_app
+from ckan.tests import conf_dir
+
 from ckan.tests import *
 import ckan.model as model
 from ckan.lib.create_test_data import CreateTestData
 from ckanext.junar.model import ResourceRelatedElement
+from ckan.tests import search_related, TestController, CreateTestData, url_for
 
 from ludibrio import Stub
 from ludibrio.matcher import *
@@ -15,12 +21,11 @@ from ludibrio.matcher import *
 
 
 from junar_api import junar_api
-from ckanext.config import JUNAR_API_KEY
 
 from junar_api.junar_api import DataStream
 
 
-
+JUNAR_API_KEY = 'TEST_KEY'
     
     
 
@@ -28,13 +33,20 @@ class TestJunar(unittest.TestCase):
     
     @classmethod
     def setup_class(cls):
-        plugins.load('junar')
+        config = appconfig('config:test.ini', relative_to=conf_dir)
+        config.local_conf['ckan.plugins'] = 'junar'
+        config.local_conf['junar_api_key'] = JUNAR_API_KEY
+        config.local_conf['junar_api_url'] = 'http://api.staging.junar.com'
+        config.local_conf['junar_base_url'] = 'http://staging.junar.com'
+        wsgiapp = make_app(config.global_conf, **config.local_conf)
+        cls.app = paste.fixture.TestApp(wsgiapp)
+
         with Stub() as DataStream:
             DataStream.guid >> 'the-precious-guid'
             
         with Stub() as Junar:
             from junar_api import junar_api
-            junar_api_client = junar_api.Junar(JUNAR_API_KEY, base_uri = 'http://api.staging.junar.com')
+            junar_api_client = junar_api.Junar(JUNAR_API_KEY , base_uri = 'http://api.staging.junar.com')
 
             junar_api_client.publish(kind_of(dict)) >> DataStream
 
@@ -94,7 +106,13 @@ class TestJunar(unittest.TestCase):
 class TestResourceRelatedElement(unittest.TestCase):
     @classmethod
     def setup_class(cls):
-        plugins.load('junar')
+        config = appconfig('config:test.ini', relative_to=conf_dir)
+        config.local_conf['ckan.plugins'] = 'junar'
+        config.local_conf['junar_api_key'] = JUNAR_API_KEY
+        config.local_conf['junar_api_url'] = 'http://api.staging.junar.com'
+        config.local_conf['junar_base_url'] = 'http://staging.junar.com'
+        wsgiapp = make_app(config.global_conf, **config.local_conf)
+        cls.app = paste.fixture.TestApp(wsgiapp)
         with Stub() as DataStream:
             DataStream.guid >> 'the-precious-guid'
             
@@ -126,7 +144,6 @@ class TestResourceRelatedElement(unittest.TestCase):
                             )
         model.Session.add(pr)
         rev = model.repo.new_revision()
-        model.repo.commit_and_remove()
         resource_related_element = ResourceRelatedElement(name="elemento relacionado")
         resource_related_element.resource = pr
         resource_related_element.title = u'elemento relacionado'
@@ -141,7 +158,13 @@ class TestResourceRelatedElement(unittest.TestCase):
 class TestGettingThingsFromJunarApi(unittest.TestCase):
     @classmethod
     def setup_class(cls):
-        plugins.load('junar')
+        config = appconfig('config:test.ini', relative_to=conf_dir)
+        config.local_conf['ckan.plugins'] = 'junar'
+        config.local_conf['junar_api_key'] = JUNAR_API_KEY
+        config.local_conf['junar_api_url'] = 'http://api.staging.junar.com'
+        config.local_conf['junar_base_url'] = 'http://staging.junar.com'
+        wsgiapp = make_app(config.global_conf, **config.local_conf)
+        cls.app = paste.fixture.TestApp(wsgiapp)
         with Stub() as DataStream:
             DataStream.guid >> 'the-precious-guid'
             
@@ -198,6 +221,42 @@ class TestGettingThingsFromJunarApi(unittest.TestCase):
         resource = model.Session.query(model.Resource).get(pr.id)
             
         assert resource.related_elements.__len__() == 0
+
+    def test_junar_returns_401_view(self):
+        '''
+        When junar returns an error 401 we should not be creating any related related elements
+        even though the resource view is returning 500
         
-    
+        '''
+
+        with Stub() as Junar:
+            from junar_api import junar_api
+            junar_api_client = junar_api.Junar(JUNAR_API_KEY, base_uri = 'http://api.staging.junar.com')
+            #it is very important to define what this method will return on error
+            junar_api_client.publish(kind_of(dict)) >> None
         
+        pkg = model.Package(name=u'the package name')
+        model.Session.add(pkg)
+        rg = pkg.resource_groups[0]
+        pr = model.Resource(url=u'thaurl',
+                            name=u'the title',
+                            format=u'csv',
+                            description=u'lorem ipsum',
+                            hash=u'12345',
+                            alt_url=u'http://theurl.com',
+                            extras={u'size':200},
+                            )
+        rg.resources.append(pr)
+        rev = model.repo.new_revision()
+
+        model.Session.add(pr)
+        model.repo.commit_and_remove()
+
+
+        offset = url_for(controller='revision', action='resource_read', resource_id = pr.id, id = pkg.name)
+        offset2 = '/dataset/the-package-name/resource/'+pr.id
+        res = self.app.get(offset2)
+        print res
+        
+
+        assert False

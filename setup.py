@@ -22,7 +22,7 @@ setup(
 	install_requires=[
 		# -*- Extra requirements: -*-
 		'html',
-		'PasteDeploy'
+                'PasteDeploy==1.5.0'
 	],
 	entry_points=\
 	"""
