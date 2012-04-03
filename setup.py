@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import sys, os
 
 version = '0.1'
 
@@ -28,8 +27,6 @@ setup(
 	"""
         [ckan.plugins]
 	# Add plugins here, eg
-	junar=ckanext.junar:Junar
-	[paste.paster_command]
-	junar=ckanext.junar.commands.junar:Junar
+	junar=ckanext.junar.plugin:Junar
 	""",
 )
