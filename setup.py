@@ -25,8 +25,9 @@ setup(
 	],
 	entry_points=\
 	"""
-        [ckan.plugins]
-	# Add plugins here, eg
+    [ckan.plugins]
 	junar=ckanext.junar.plugin:Junar
+	[paste.paster_command]
+    junar=ckanext.junar.commands:Junar
 	""",
 )
